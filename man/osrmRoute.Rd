@@ -4,7 +4,8 @@
 \alias{osrmRoute}
 \title{Get the Shortest Path Between Two Points}
 \usage{
-osrmRoute(src, dst, overview = "simplified", sp = FALSE)
+osrmRoute(src, dst, overview = "simplified", sp = FALSE, distance = FALSE,
+  curb = FALSE)
 }
 \arguments{
 \item{src}{a numeric vector of identifier, longitude and latitude (WGS84), a 
@@ -19,10 +20,15 @@ point.}
 according to highest zoom level it could be display on, or not at all.}
 
 \item{sp}{if sp is TRUE the function returns a SpatialLinesDataFrame.}
+
+\item{distance}{TBD: document this}
+
+\item{curb}{TBD: document this}
 }
 \value{
 If sp is FALSE, a data frame is returned. It contains the longitudes and latitudes of 
 the travel path between the two points.\cr
+TBD: document distance and duration columns.\cr
 If sp is TRUE a SpatialLinesDataFrame is returned. It contains 4 fields : 
 identifiers of origine and destination, travel time in minutes and travel distance in 
 kilometers.\cr
