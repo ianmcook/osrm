@@ -11,8 +11,11 @@
 #' @param overview "full", "simplified" or FALSE. Add geometry either full (detailed), simplified 
 #' according to highest zoom level it could be display on, or not at all. 
 #' @param sp if sp is TRUE the function returns a SpatialLinesDataFrame.
+#' @param distance TBD: document this
+#' @param curb TBD: document this
 #' @return If sp is FALSE, a data frame is returned. It contains the longitudes and latitudes of 
 #' the travel path between the two points.\cr
+#' TBD: document distance and duration columns.\cr
 #' If sp is TRUE a SpatialLinesDataFrame is returned. It contains 4 fields : 
 #' identifiers of origine and destination, travel time in minutes and travel distance in 
 #' kilometers.\cr
@@ -45,13 +48,17 @@
 #' route3@data
 #' }
 #' @export
-osrmRoute <- function(src, dst, overview = "simplified", sp = FALSE){
+osrmRoute <- function(src, dst, overview = "simplified", sp = FALSE, distance = FALSE, curb = FALSE){
   tryCatch({
     
     # src = com[1, c("comm_id", "lon","lat")]
     # dst = com[2, c("comm_id", "lon","lat")]
     # sp=TRUE
     # overview = "simplified"
+    
+    if (distance && (overview != "full" || sp)) {
+      stop("You must set overview = \"full\" and sp = FALSE when distance = TRUE")
+    }
     
     oprj <- NA
     if(testSp(src)){
@@ -72,7 +79,10 @@ osrmRoute <- function(src, dst, overview = "simplified", sp = FALSE){
                  src[2], ",", src[3],
                  ";",
                  dst[2],",",dst[3], 
-                 "?alternatives=false&geometries=polyline&steps=false&overview=",
+                 "?alternatives=false&geometries=polyline&steps=false&annotations=",
+                 ifelse(distance, "true", "false"),
+                 if(curb) {"&approaches=curb;curb"},
+                 "&overview=",
                  tolower(overview),
                  sep="")
     
@@ -101,6 +111,12 @@ osrmRoute <- function(src, dst, overview = "simplified", sp = FALSE){
     }
     # Coordinates of the line
     geodf <- gepaf::decodePolyline(res$routes$geometry)[,c(2,1)]
+    
+    if (distance) {
+      # Distance (km) and duration (min)
+      geodf$distance <- c(0, res$routes$legs[[1]]$annotation$distance[[1]] / 1000)
+      geodf$duration <- c(0, res$routes$legs[[1]]$annotation$duration[[1]] / 60)
+    }
 
     # Convert to SpatialLinesDataFrame
     if (sp == TRUE){
